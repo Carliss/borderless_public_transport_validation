@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Metro stats</title>
+    <script src="static/vue.js"></script>
+    <style>
+        #app {
+            display: flex;
+            flex-direction: row;
+        }
+
+        #app div {
+            flex: 1;
+            font-size: 20px;
+            text-align: center;
+            border-radius: 50px;
+            padding-bottom: 20px;
+            border: 1px solid black;
+            margin-right: 5px;
+        }
+
+        .colums {
+            display: flex;
+            flex-direction: column;
+        }
+
+        #total {
+            background-color: aqua;
+        }
+
+        #skip {
+            background-color: #f54848;
+        }
+
+        #valid {
+            background-color: #66ef5f;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <div class="colums">
+            <div id="total">
+                <h1>total_count</h1>
+                [[ items.total_count]]
+            </div>
+            <div id="skip">
+                <h1>total_skippers</h1>
+                [[ items.total_skippers]]
+            </div>
+            <div id="valid">
+                <h1>total_validation</h1>
+                [[ items.total_validation]]
+            </div>
+        </div>
+        <div>
+            <select v-model="audio">
+                <option disabled value="">Select audio</option>
+                <option>sound_buzz</option>
+                <option>sound_happy</option>
+            </select>
+        </div>
+    </div>
+    <script>
+        const audio_validation = new Audio("static/sound_validation.mp4")
+        const audio = {
+            sound_buzz: new Audio("static/sound_buzz.mp4"),
+            sound_happy: new Audio("static/sound_happy.mp4"),
+        }
+        Vue.options.delimiters = ['[[', ']]'];
+        var app = new Vue({
+            el: '#app',
+            data: {
+                items: 'heo',
+                audio: 'sound_buzz'
+            },
+            methods: {
+                loadData: function () {
+                    console.log('hei');
+                    fetch('/data')
+                        .then(function (response) {
+                            return response.json();
+                        })
+                        .then(function (json) {
+                            if (this.items.total_validation < json.total_validation) {
+                                console.log('play valid')
+                                audio_validation.play()
+                            }
+                            if (this.items.total_skippers < json.total_skippers) {
+                                console.log('play skip')
+                                audio[this.audio].play()
+                            }
+                            return json
+                        }.bind(this))
+                        .then(function (json) {
+                            this.items = json
+                        }.bind(this))
+
+                }
+            },
+            mounted: function () {
+                console.log('hjas');
+                this.loadData();
+
+                setInterval(function () {
+                    this.loadData();
+                }.bind(this), 500);
+            }
+        });
+    </script>
+</body>
+
+</html>
